@@ -8,9 +8,11 @@
 package main
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"image/png"
+	"log"
 	"math/cmplx"
 	"os"
 )
@@ -31,7 +33,23 @@ func main() {
 			img.Set(px, py, mandelbrot(z))
 		}
 	}
-	png.Encode(os.Stdout, img) // NOTE: ignoring errors
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Current working directory:", dir)
+	// Create a new file for the PNG image
+	file, err := os.Create("mandelbrot.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	// Write the PNG image to the file
+	err = png.Encode(file, img)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func mandelbrot(z complex128) color.Color {
@@ -69,8 +87,9 @@ func sqrt(z complex128) color.Color {
 // f(x) = x^4 - 1
 //
 // z' = z - f(z)/f'(z)
-//    = z - (z^4 - 1) / (4 * z^3)
-//    = z - (z - 1/z^3) / 4
+//
+//	= z - (z^4 - 1) / (4 * z^3)
+//	= z - (z - 1/z^3) / 4
 func newton(z complex128) color.Color {
 	const iterations = 37
 	const contrast = 7
